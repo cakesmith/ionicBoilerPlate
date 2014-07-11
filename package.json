@@ -1,6 +1,7 @@
 {
   "name": "Tectonic",
   "version": "0.1.0",
+  "description": "A semi-personal seed for ionic/angular apps",
   "dependencies": {},
   "devDependencies": {
     "cordova": "~3.4.0-0.1.3",
