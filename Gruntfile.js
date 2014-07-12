@@ -53,8 +53,7 @@ module.exports = function (grunt) {
           livereload: '<%= connect.options.livereload %>'
         },
         files  : [
-          '<%= yeoman.app %>/*.html',
-          '<%= yeoman.app %>/templates/**/*.html',
+          '<%= yeoman.app %>/**/*.html',
           '.tmp/<%= yeoman.styles %>/**/*.css',
           '<%= yeoman.app %>/<%= yeoman.images %>/**/*.{png,jpg,jpeg,gif,webp,svg}'
         ]
@@ -352,6 +351,9 @@ module.exports = function (grunt) {
           '<%= yeoman.app %>/bower_components/ionic/release/js/ionic.js',
           '<%= yeoman.app %>/bower_components/ionic/release/js/ionic-angular.js',
           '<%= yeoman.app %>/bower_components/angular-mocks/angular-mocks.js',
+          '<%= yeoman.app %>/bower_components/firebase/firebase.js',
+          '<%= yeoman.app %>/bower_components/firebase-simple-login/firebase-simple-login.js',
+          '<%= yeoman.app %>/bower_components/angularfire/angularfire.js',
           '<%= yeoman.app %>/<%= yeoman.scripts %>/**/*.js',
           'test/mock/**/*.mock.js',
           'test/spec/**/*.spec.js'
@@ -490,7 +492,8 @@ module.exports = function (grunt) {
       files: [
         '<%= yeoman.app %>/<%= yeoman.scripts %>/**/*.js',
         'test/spec/**/*.spec.js',
-        'app/scripts/**/*.spec.js'],
+        'app/scripts/**/*.spec.js'
+      ],
       tasks: ['newer:jshint:test', 'karma:unit:run']
     };
     grunt.config.set('watch', karma);
