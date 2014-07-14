@@ -3,7 +3,7 @@
 
 (function (stubs) {
 
-  function stub () {
+  function stub() {
     var out = {};
     angular.forEach(arguments, function (m) {
       out[m] = jasmine.createSpy();
@@ -11,25 +11,25 @@
     return out;
   }
 
-  var reject = function ($q, error) {
+  function reject($q, error) {
     var def = $q.defer();
     def.reject(error);
     return def.promise;
-  };
+  }
 
-  var resolve = function ($q, val) {
+  function resolve($q, val) {
     var def = $q.defer();
     def.resolve(val);
     return def.promise;
-  };
+  }
 
-  var customSpy = function (obj, m, fn) {;
+  function customSpy(obj, m, fn) {
 
     obj[m] = fn;
-    spyOn(obj, m).andCallThrough();
-  };
+    spyOn(obj, m).and.callThrough();
+  }
 
-  var firebaseStub = function () {
+  function firebaseStub() {
 
     // firebase is invoked using new Firebase, but we need a static ref
     // to the functions before it is instantiated, so we cheat here by
@@ -56,32 +56,34 @@
 
   };
 
-  var flush = function ($timeout) {
+  function flush($timeout) {
     try {
       $timeout.flush();
     }
     catch (e) {
     } // is okay
-  };
+  }
 
-  var ErrorWithCode = function (code, msg) {
+  function ErrorWithCode(code, msg) {
 
     this.code = code;
     this.msg = msg;
 
-    ErrorWithCode.prototype.toString = function () {
-      return this.msg;
-    };
-  };
+    var theError = this;
 
-  var angularAuthStub = function () {
+    ErrorWithCode.prototype.toString = function () {
+      return theError.msg;
+    };
+  }
+
+  function angularAuthStub() {
 
     function AuthStub() { return AuthStub.fns; }
 
     AuthStub.fns = stub('$login', '$logout');
 
     return AuthStub;
-  };
+  }
 
   stubs.provider('stubs', {
     $get: function() {
@@ -98,6 +100,4 @@
     }
   });
 
-
-}(angular.module('firebase.stubs', [
-])));
+}(angular.module('firebase.stubs', [])));

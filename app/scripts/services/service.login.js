@@ -1,6 +1,5 @@
 angular.module('Tectonic.service.login', ['firebase', 'Tectonic.service.firebase'])
 
-
   .factory('loginService', ['$rootScope', '$firebaseSimpleLogin', 'firebaseRef', 'profileCreator', '$timeout',
     function ($rootScope, $firebaseSimpleLogin, firebaseRef, profileCreator, $timeout) {
       var auth = null;
@@ -74,7 +73,9 @@ angular.module('Tectonic.service.login', ['firebase', 'Tectonic.service.firebase
     }])
 
   .factory('profileCreator', ['firebaseRef', '$timeout', function (firebaseRef, $timeout) {
+
     return function (id, email, callback) {
+
       firebaseRef('users/' + id).set({email: email, name: firstPartOfEmail(email)}, function (err) {
         //err && console.error(err);
         if (callback) {
@@ -94,5 +95,6 @@ angular.module('Tectonic.service.login', ['firebase', 'Tectonic.service.firebase
         var f = str.charAt(0).toUpperCase();
         return f + str.substr(1);
       }
-    }
+    };
+
   }]);

@@ -495,7 +495,6 @@ module.exports = function (grunt) {
       tasks: ['newer:jshint:test', 'karma:unit:run']
     };
     grunt.config.set('watch', karma);
-    grunt.task.run(karma.tasks);
     return grunt.task.run(['watch']);
   });
 

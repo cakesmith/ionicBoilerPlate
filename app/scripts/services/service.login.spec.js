@@ -6,7 +6,7 @@ describe('service.login', function () {
   var flush, resolve, reject, customSpy, ErrorWithCode;
 
   beforeEach(function () {
-    module('Tectonic.services');
+    module('Tectonic.service.login');
     module('firebase.stubs');
   });
 
@@ -14,7 +14,6 @@ describe('service.login', function () {
     // mock dependencies used by our services to isolate testings
 
     var stubs = stubsProvider.$get();
-
 
     $provide.value('Firebase', stubs.firebaseStub());
     $provide.value('$location', stubs.stub('path'));
@@ -29,7 +28,6 @@ describe('service.login', function () {
   }));
 
   describe('loginService', function () {
-
 
     describe('#login', function () {
 
@@ -54,7 +52,7 @@ describe('service.login', function () {
         inject(function ($q, $timeout, loginService, $firebaseSimpleLogin) {
           var cb = jasmine.createSpy();
           loginService.init();
-          $firebaseSimpleLogin.fns.$login.andReturn(reject($q, 'test_error'));
+          $firebaseSimpleLogin.fns.$login.and.returnValue(reject($q, 'test_error'));
           loginService.login('test@test.com', '123', cb);
           flush($timeout);
           expect(cb).toHaveBeenCalledWith('test_error');
@@ -67,7 +65,7 @@ describe('service.login', function () {
           var cb = jasmine.createSpy();
 
           loginService.init();
-          $firebaseSimpleLogin.fns.$login.andReturn(resolve($q, {hello: 'world'}));
+          $firebaseSimpleLogin.fns.$login.and.returnValue(resolve($q, {hello: 'world'}));
           loginService.login('test@test.com', '123', cb);
           flush($timeout);
 
@@ -118,7 +116,8 @@ describe('service.login', function () {
         })
       );
 
-      it('should fail with Error if init() is not called first', inject(function ($timeout, loginService) {
+      it('should fail with Error if init() is not called first',
+        inject(function ($timeout, loginService) {
 
         var errorThrown = false;
         var cb = jasmine.createSpy();
@@ -139,7 +138,8 @@ describe('service.login', function () {
         }
 
         expect(errorThrown).toEqual(true);
-      }));
+      })
+      );
 
       it('should fail if old password is missing',
         inject(function (loginService, $firebaseSimpleLogin, $timeout) {
@@ -152,7 +152,7 @@ describe('service.login', function () {
           });
           flush($timeout);
 
-          expect(cb.calls.length).toEqual(1);
+          expect(cb.calls.count()).toEqual(1);
 
           expect(cb).toHaveBeenCalledWith('Please enter a password');
           expect($firebaseSimpleLogin.fns.$changePassword).not.toHaveBeenCalled();
@@ -186,13 +186,12 @@ describe('service.login', function () {
           });
           flush($timeout);
 
-          expect(cb.calls.length).toEqual(1);
+          expect(cb.calls.count()).toEqual(1);
 
           expect(cb).toHaveBeenCalledWith('Passwords do not match');
           expect($firebaseSimpleLogin.fns.$changePassword).not.toHaveBeenCalled();
         })
       );
-
 
       it('should return null if $firebaseSimpleLogin succeeds',
         inject(function (loginService, $firebaseSimpleLogin, $timeout) {
@@ -237,12 +236,11 @@ describe('service.login', function () {
 
           flush($timeout);
 
-          expect(cb.argsForCall[0][0].toString()).toBe('errr');
+          expect(cb.calls.argsFor(0)[0].toString()).toBe('errr');
           expect($firebaseSimpleLogin.fns.$changePassword).toHaveBeenCalled();
 
         })
       );
-
 
     });
 
@@ -315,7 +313,6 @@ describe('service.login', function () {
           expect(loginService.createProfile).toBe(profileCreator);
         })
       );
-
     });
 
   });
@@ -339,7 +336,7 @@ describe('service.login', function () {
       inject(function (profileCreator, firebaseRef, $timeout) {
         profileCreator(123, 'test@test.com');
         flush($timeout);
-        expect(firebaseRef.fns.set.argsForCall[0][0]).toEqual({email: 'test@test.com', name: 'Test'});
+        expect(firebaseRef.fns.set.calls.argsFor(0)[0]).toEqual({email: 'test@test.com', name: 'Test'});
       }));
 
     it('should invoke the callback',
