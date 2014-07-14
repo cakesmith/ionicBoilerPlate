@@ -1,7 +1,8 @@
-angular.module('Tectonic.service.firebase', ['firebase'])
+'use strict';
+(function (firebase) {
 
 // a simple utility to create references to Firebase paths
-  .factory('firebaseRef', ['Firebase', 'FBURL', function (Firebase, FBURL) {
+  firebase.factory('firebaseRef', ['Firebase', 'FBURL', function (Firebase, FBURL) {
     /**
      * @function
      * @name firebaseRef
@@ -10,11 +11,11 @@ angular.module('Tectonic.service.firebase', ['firebase'])
      */
     return function (path) {
       return new Firebase(pathRef([FBURL].concat(Array.prototype.slice.call(arguments))));
-    }
-  }])
+    };
+  }]);
 
   // a simple utility to create $firebase objects from angularFire
-  .service('syncData', ['$firebase', 'firebaseRef', function ($firebase, firebaseRef) {
+  firebase.service('syncData', ['$firebase', 'firebaseRef', function ($firebase, firebaseRef) {
     /**
      * @function
      * @name syncData
@@ -26,14 +27,17 @@ angular.module('Tectonic.service.firebase', ['firebase'])
       var ref = firebaseRef(path);
       limit && (ref = ref.limit(limit));
       return $firebase(ref);
-    }
+    };
   }]);
 
-function pathRef(args) {
-  for (var i = 0; i < args.length; i++) {
-    if (typeof(args[i]) === 'object') {
-      args[i] = pathRef(args[i]);
+  function pathRef(args) {
+    for (var i = 0; i < args.length; i++) {
+      if (typeof(args[i]) === 'object') {
+        args[i] = pathRef(args[i]);
+      }
     }
+    return args.join('/');
   }
-  return args.join('/');
-}
+}(angular.module('Tectonic.service.firebase', [
+  'firebase'
+])));

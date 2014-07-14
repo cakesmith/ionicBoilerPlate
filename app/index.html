@@ -37,14 +37,22 @@
 <script src="bower_components/ionic/release/js/ionic.js"></script>
 <script src="bower_components/ionic/release/js/ionic-angular.js"></script>
 <script src="bower_components/firebase/firebase.js"></script>
-<script src="bower_components/firebase-simple-login/firebase-simple-login.js"></script>
+<script src="bower_components/firebase-simple-login/firebase-simple-loginService.js"></script>
 <script src="bower_components/angularfire/angularfire.js"></script>
 <!-- endbower -->
 <!-- endbuild -->
 
 <!--included sources using grunt-include-source-->
 <script type="text/javascript" src="scripts/app.js"></script>
-<script type="text/javascript" src="scripts/login/login.js"></script>
+<script type="text/javascript" src="scripts/modules/config/module.config.js"></script>
+<script type="text/javascript" src="scripts/modules/modules.js"></script>
+<script type="text/javascript" src="scripts/modules/routeSecurity/module.routeSecurity.js"></script>
+<script type="text/javascript" src="scripts/modules/simpleLoginTools/module.simpleLoginTools.js"></script>
+<script type="text/javascript" src="scripts/services/changeEmail/service.changeEmail.js"></script>
+<script type="text/javascript" src="scripts/services/firebase/service.firebase.js"></script>
+<script type="text/javascript" src="scripts/services/login/service.login.js"></script>
+<script type="text/javascript" src="scripts/services/services.js"></script>
+<script type="text/javascript" src="scripts/views/scanView.js"></script>
 
 <!-- cordova script (this will be a 404 during development) -->
 <script src="cordova.js"></script>

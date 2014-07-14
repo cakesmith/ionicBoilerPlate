@@ -1,6 +1,8 @@
-angular.module('Tectonic.service.login', ['firebase', 'Tectonic.service.firebase'])
+'use strict';
 
-  .factory('loginService', ['$rootScope', '$firebaseSimpleLogin', 'firebaseRef', 'profileCreator', '$timeout',
+(function (login) {
+
+  login.factory('loginService', ['$rootScope', '$firebaseSimpleLogin', 'firebaseRef', 'profileCreator', '$timeout',
     function ($rootScope, $firebaseSimpleLogin, firebaseRef, profileCreator, $timeout) {
       var auth = null;
       return {
@@ -48,7 +50,9 @@ angular.module('Tectonic.service.login', ['firebase', 'Tectonic.service.firebase
           }
           else {
             auth.$changePassword(opts.email, opts.oldpass, opts.newpass)
-              .then(function () { cb && cb(null) }, cb);
+              .then(function () {
+                cb && cb(null)
+              }, cb);
           }
         },
 
@@ -70,9 +74,9 @@ angular.module('Tectonic.service.login', ['firebase', 'Tectonic.service.firebase
           throw new Error('Must call loginService.init() before using its methods');
         }
       }
-    }])
+    }]);
 
-  .factory('profileCreator', ['firebaseRef', '$timeout', function (firebaseRef, $timeout) {
+  login.factory('profileCreator', ['firebaseRef', '$timeout', function (firebaseRef, $timeout) {
 
     return function (id, email, callback) {
 
@@ -98,3 +102,7 @@ angular.module('Tectonic.service.login', ['firebase', 'Tectonic.service.firebase
     };
 
   }]);
+
+}(angular.module('Tectonic.service.login', [
+  'firebase',
+  'Tectonic.service.firebase'])));

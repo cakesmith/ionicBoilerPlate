@@ -1,8 +1,12 @@
-(function() {
-  'use strict';
+'use strict';
+(function () {
 
-  /* Modules */
+  /* Tectonic Submodules */
 
-  angular.module('Tectonic.modules', ['Tectonic.config', 'routeSecurity', 'simpleLoginTools']);
+  angular.module('Tectonic.modules', [
+    'Tectonic.module.config',
+    'Tectonic.module.routeSecurity',
+    'Tectonic.module.simpleLoginTools'
+  ]);
 
 })();
