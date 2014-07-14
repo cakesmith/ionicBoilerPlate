@@ -5,24 +5,25 @@
 
   app.config(['$stateProvider', '$urlRouterProvider', function ($stateProvider, $urlRouterProvider) {
 
-    $urlRouterProvider.otherwise('/loginService');
+    $urlRouterProvider.otherwise('/main');
 
   }]);
 
 
-/*  app.run(function () {
-  });
+  /*  app.run(function () {
+   });
 
-  app.controller('AppCtrl', function ($scope) {
+   app.controller('AppCtrl', function ($scope) {
 
-  });*/
+   });*/
 
 
 }(angular.module('Tectonic', [
   'ionic',
   'firebase',
   'Tectonic.services',
-  'Tectonic.modules'
+  'Tectonic.modules',
+  'Tectonic.views'
 
 ])));
 

@@ -6,28 +6,28 @@
 
 'use strict';
 
-(function(app) {
+(function (app) {
 
-  app.config(['$stateProvider', function($stateProvider) {
+  app.config(['$stateProvider', function ($stateProvider) {
 
     $stateProvider.state('scanView', {
-      url: '/scan',
+      url  : '/scan',
       views: {
         'main': {
-          controller: 'ScanViewCtrl',
-          templateUrl: 'scanView.tpl.html'
+          controller : 'ScanViewCtrl',
+          templateUrl: 'scan/view.scan.tpl.html'
         }
       },
-      data: { pageTitle: 'ScanView' }
+      data : { pageTitle: 'ScanView' }
     });
   }]);
 
-  app.controller('ScanViewCtrl', ['$scope', function($scope) {
+  app.controller('ScanViewCtrl', ['$scope', function ($scope) {
 
 
   }]);
 
 
-}(angular.module('Tectonic.scanView', [
+}(angular.module('Tectonic.view.scan', [
   'ui.router'
 ])));

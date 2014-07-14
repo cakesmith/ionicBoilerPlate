@@ -119,26 +119,26 @@ describe('service.login', function () {
       it('should fail with Error if init() is not called first',
         inject(function ($timeout, loginService) {
 
-        var errorThrown = false;
-        var cb = jasmine.createSpy();
+          var errorThrown = false;
+          var cb = jasmine.createSpy();
 
-        try {
+          try {
 
-          loginService.changePassword({
-            newpass : 123,
-            confirm : 123,
-            callback: cb
-          });
+            loginService.changePassword({
+              newpass : 123,
+              confirm : 123,
+              callback: cb
+            });
 
-          flush($timeout);
+            flush($timeout);
 
-        } catch (e) {
-          errorThrown = true;
-          expect(e.message).toBeDefined();
-        }
+          } catch (e) {
+            errorThrown = true;
+            expect(e.message).toBeDefined();
+          }
 
-        expect(errorThrown).toEqual(true);
-      })
+          expect(errorThrown).toEqual(true);
+        })
       );
 
       it('should fail if old password is missing',

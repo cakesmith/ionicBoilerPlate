@@ -1,5 +1,8 @@
-angular.module('Tectonic.service.changeEmail', ['Tectonic.service.login', 'Tectonic.service.firebase'])
-  .factory('changeEmailService', ['$rootScope', 'firebaseRef', '$timeout', '$q', 'loginService',
+'use strict';
+
+(function (changeEmail) {
+
+  changeEmail.factory('changeEmailService', ['$rootScope', 'firebaseRef', '$timeout', '$q', 'loginService',
     function ($rootScope, firebaseRef, $timeout, $q, loginService) {
       var auth = $rootScope.auth;
       return function (opts) {
@@ -103,8 +106,13 @@ angular.module('Tectonic.service.changeEmail', ['Tectonic.service.login', 'Tecto
           .then(removeOldLogin)
           // success
           .then(function () {
-            cb && cb(null)
+            return (cb && cb(null));
           }, cb)
           .catch(errorFn);
       };
     }]);
+
+}(angular.module('Tectonic.service.changeEmail', [
+  'Tectonic.service.login',
+  'Tectonic.service.firebase'
+])));

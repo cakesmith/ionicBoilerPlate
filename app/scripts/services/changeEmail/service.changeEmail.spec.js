@@ -44,11 +44,11 @@ describe('service.changeEmail', function () {
 
     opts = {
       callback: cb,
-      newEmail   : 'my@newEmail.com',
+      newEmail: 'my@newEmail.com',
       pass    : 'password'
     };
 
-    loginService.login = function(email, pass, callback) {
+    loginService.login = function (email, pass, callback) {
       callback(null, 'user');
     };
 
@@ -76,7 +76,7 @@ describe('service.changeEmail', function () {
 
     }));
 
-    it('should resolve', inject(function($timeout, changeEmailService, loginService) {
+    it('should resolve', inject(function ($timeout, changeEmailService, loginService) {
 
       spyOn(loginService, 'login').and.callThrough();
 
@@ -93,7 +93,7 @@ describe('service.changeEmail', function () {
 
   describe('#loadOldProfile', function () {
 
-    it('should reject promise on firebaseRef error', inject(function($timeout, changeEmailService, firebaseRef) {
+    it('should reject promise on firebaseRef error', inject(function ($timeout, changeEmailService, firebaseRef) {
 
       var error = new ErrorWithCode(543, 'zort');
 

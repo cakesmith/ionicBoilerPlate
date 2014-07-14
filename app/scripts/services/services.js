@@ -1,12 +1,13 @@
+'use strict';
 (function () {
-  'use strict';
 
-  /* Services */
+  /* Tectonic Services */
 
-  angular.module('Tectonic.services', ['Tectonic.service.login', 'Tectonic.service.firebase', 'Tectonic.service.changeEmail'])
-
-  // put your services here!
-  // .service('serviceName', ['dependency', function(dependency) {}]);
+  angular.module('Tectonic.services', [
+    'Tectonic.service.login',
+    'Tectonic.service.firebase',
+    'Tectonic.service.changeEmail'
+  ]);
 
 })();
 
