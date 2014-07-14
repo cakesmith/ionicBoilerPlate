@@ -1,9 +1,10 @@
 'use strict';
-/* jshint ignore:start */
 
 describe('service.changeEmail', function () {
 
   var ErrorWithCode, flush, reject, resolve, cb, opts;
+
+  var newEmail;
 
   beforeEach(function () {
     module('Tectonic.service.changeEmail');
@@ -12,7 +13,7 @@ describe('service.changeEmail', function () {
 
   beforeEach(module(function ($provide, firebaseStubProvider, loginServiceStubProvider) {
 
-    var FBURL = "http://mock.firebaseio.com";
+    var FBURL = 'http://mock.firebaseio.com';
 
     $provide.value('FBURL', FBURL);
     $provide.value('Firebase', firebaseStubProvider.$get());
@@ -23,6 +24,8 @@ describe('service.changeEmail', function () {
   beforeEach(inject(function (_ErrorWithCode_, async, $rootScope) {
 
     ErrorWithCode = _ErrorWithCode_;
+
+    cb = jasmine.createSpy('callback');
 
     flush = async.flush;
     reject = async.reject;
@@ -35,61 +38,29 @@ describe('service.changeEmail', function () {
       }
     };
 
-    cb = jasmine.createSpy('callback');
-
     opts = {
       callback: cb,
       newEmail: 'my@newEmail.com',
       pass    : 'password'
     };
 
+    newEmail = {};
+
   }));
 
-  beforeEach(inject(function (loginService) {
+  beforeEach(inject(function (loginService, Firebase) {
 
-    // resolve login service by default
+    // resolve loginService.login promise by default
 
     loginService.login.and.callFake(function (email, pass, cb) {
       cb(null, 'user');
     });
 
+    // resolve loginService.createAccount by default
 
-  }));
-
-  describe('#authenticate', function () {
-
-    it('should resolve promise by default', inject(function ($timeout, changeEmailService, loginService) {
-
-      changeEmailService(opts);
-      flush($timeout);
-
-      expect(loginService.login).toHaveBeenCalled();
-      expect(cb).not.toHaveBeenCalled();
-
-    }));
-
-    it('should reject promise on loginService error', inject(function ($timeout, changeEmailService, loginService) {
-
-      var err = new ErrorWithCode(123, 'fail');
-
-      loginService.login.and.callFake(function (email, pass, callback) {
-        callback(err);
-      });
-
-      changeEmailService(opts);
-      flush($timeout);
-
-      expect(loginService.login).toHaveBeenCalled();
-      expect(cb).toHaveBeenCalledWith(err);
-
-    }));
-
-
-  });
-
-  var newEmail = {};
-
-  beforeEach(inject(function (Firebase) {
+    loginService.createAccount.and.callFake(function (email, pass, cb) {
+      cb(null, 'user');
+    });
 
     // resolve Firebase.once promise by default
 
@@ -103,7 +74,27 @@ describe('service.changeEmail', function () {
       snapFn(snap);
     });
 
+
   }));
+
+  describe('#authenticate', function () {
+
+    it('should log in', inject(function ($timeout, changeEmailService, loginService) {
+
+      changeEmailService(opts);
+      flush($timeout);
+
+      expect(loginService.login).toHaveBeenCalledWith(
+        'test@test.net',
+        'password',
+        jasmine.any(Function)
+      );
+
+      expect(cb).not.toHaveBeenCalled();
+
+    }));
+
+  });
 
   describe('#loadOldProfile', function () {
 
@@ -115,66 +106,127 @@ describe('service.changeEmail', function () {
       expect(Firebase.fns.once).toHaveBeenCalled();
       expect(newEmail.email).toEqual('my@newEmail.com');
 
-
-    }));
-
-    it('should reject promise on Firebase error', inject(function ($timeout, changeEmailService, Firebase) {
-
-      var error = new ErrorWithCode(543, 'zort');
-
-      Firebase.fns.once.and.callFake(function (value, snapFn, err) {
-        err(error);
-      });
-
-      changeEmailService(opts);
-      flush($timeout);
-
-      expect(Firebase.fns.once).toHaveBeenCalled();
-      expect(cb).toHaveBeenCalledWith(error);
-
     }));
 
   });
 
   describe('#createNewAccount', function () {
 
-    it('should reject promise on loginService error', inject(function (loginService, changeEmailService, $timeout) {
-
-      var error = new ErrorWithCode(789, 'fjord');
-
-      loginService.createAccount.and.callFake(function (email, pass, err) {
-        err(error);
-      });
+    it('should create a new account', inject(function (loginService, changeEmailService, $timeout) {
 
       changeEmailService(opts);
       flush($timeout);
 
-      expect(loginService.login).toHaveBeenCalled();
+      expect(loginService.createAccount).toHaveBeenCalledWith(
+        opts.newEmail,
+        opts.pass,
+        jasmine.any(Function)
+      );
+
+
+
+    }));
+
+  });
+
+  describe('#copyProfile', function () {
+
+    it('should copy the profile', inject(function (loginService, Firebase, changeEmailService, $timeout) {
+
+
+      changeEmailService(opts);
+
+      expect(loginService.createAccount).not.toHaveBeenCalled();
+
+      flush($timeout);
 
       expect(loginService.createAccount).toHaveBeenCalled();
 
-      expect(cb).toHaveBeenCalledWith(error);
+      expect(cb).not.toHaveBeenCalled();
+
+      expect(Firebase.fns.set).toHaveBeenCalled();
+
 
     }));
 
 
   });
 
-  describe('copyProfile', function () {
+
+
+  describe('#removeOldProfile', function () {
 
 
   });
 
-  describe('removeOldProfile', function () {
+  describe('#removeOldLogin', function () {
 
 
   });
 
-  describe('removeOldLogin', function () {
+  describe('#errorFn', function () {
+
+    describe('Firebase errors', function () {
+
+      it('should reject promise on Firebase.once error', inject(function ($timeout, changeEmailService, Firebase) {
+
+        var error = new ErrorWithCode(543, 'zort');
+
+        Firebase.fns.once.and.callFake(function (value, snapFn, err) {
+          err(error);
+        });
+
+        changeEmailService(opts);
+        flush($timeout);
+
+        expect(Firebase.fns.once).toHaveBeenCalled();
+        expect(cb).toHaveBeenCalledWith(error);
+
+      }));
+
+    });
+
+
+    describe('loginService errors', function () {
+
+
+      it('loginService.login error', inject(function ($timeout, changeEmailService, loginService) {
+
+        var err = new ErrorWithCode(123, 'fail');
+
+        loginService.login.and.callFake(function (email, pass, callback) {
+          callback(err);
+        });
+
+        changeEmailService(opts);
+        flush($timeout);
+
+        expect(loginService.login).toHaveBeenCalled();
+        expect(cb).toHaveBeenCalledWith(err);
+
+      }));
+
+      it('loginService.createAccount error', inject(function (loginService, changeEmailService, $timeout) {
+
+        var error = new ErrorWithCode(789, 'fjord');
+
+        loginService.createAccount.and.callFake(function (email, pass, err) {
+          err(error);
+        });
+
+        changeEmailService(opts);
+        flush($timeout);
+
+        expect(loginService.login).toHaveBeenCalled();
+        expect(loginService.createAccount).toHaveBeenCalled();
+        expect(cb).toHaveBeenCalledWith(error);
+
+      }));
+
+    });
 
 
   });
 
 
 });
-/* jshint ignore:end */

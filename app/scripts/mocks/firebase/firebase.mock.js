@@ -6,6 +6,7 @@
 
       $get: function () {
 
+
         function FirebaseStub(path) {
 
           FirebaseStub.fns.path = path;
@@ -13,7 +14,7 @@
           return FirebaseStub.fns;
         }
 
-        FirebaseStub.fns = jasmine.createSpyObj('Firebase', [
+        FirebaseStub.fns = jasmine.createSpyObj('Firebase.fns', [
           'set',
           'child',
           'once'
