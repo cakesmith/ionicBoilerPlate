@@ -54,7 +54,7 @@
 
     return FirebaseStub;
 
-  };
+  }
 
   function flush($timeout) {
     try {

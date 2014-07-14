@@ -5,7 +5,7 @@
 
   app.config(['$stateProvider', '$urlRouterProvider', function ($stateProvider, $urlRouterProvider) {
 
-    $urlRouterProvider.otherwise('/main');
+    $urlRouterProvider.otherwise('/login');
 
   }]);
 

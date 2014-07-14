@@ -4,10 +4,11 @@
 
   changeEmail.factory('changeEmailService', ['$rootScope', 'firebaseRef', '$timeout', '$q', 'loginService',
     function ($rootScope, firebaseRef, $timeout, $q, loginService) {
+
       var auth = $rootScope.auth;
+
       return function (opts) {
-        var cb = opts.callback || function () {
-        };
+        var cb = opts.callback || function () { };
         var oldUid = auth.user.uid;
         var oldEmail = auth.user.email;
         var oldProfile;

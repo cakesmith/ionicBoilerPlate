@@ -2,21 +2,18 @@
 
 describe('service.firebase', function () {
 
-  var customSpy, FBURL;
+  var FBURL;
 
   beforeEach(function () {
     module('Tectonic.service.firebase');
-    module('firebase.stubs');
+    module('Tectonic.mocks');
   });
 
-  beforeEach(module(function ($provide, stubsProvider) {
+  beforeEach(module(function ($provide, firebaseStubProvider) {
 
-    var stubs = stubsProvider.$get();
     FBURL = 'https://mock.firebaseio.com';
 
-    customSpy = stubs.customSpy;
-
-    $provide.value('Firebase', stubs.firebaseStub());
+    $provide.value('Firebase', firebaseStubProvider.$get());
     $provide.constant('FBURL', FBURL);
 
 
@@ -42,25 +39,22 @@ describe('service.firebase', function () {
 
   describe('syncData', function () {
 
-    beforeEach(module(function ($provide, stubsProvider) {
+    beforeEach(module(function ($provide, firebaseStubProvider) {
 
-      var stubs = stubsProvider.$get();
-
-      $provide.value('firebaseRef', stubs.firebaseStub());
-      $provide.value('$firebase', stubs.firebaseStub());
+      $provide.value('$firebase', firebaseStubProvider.$get());
 
     }));
 
-    it('should create firebase objects from angularFire', inject(function (syncData, firebaseRef) {
+    it('should create firebase objects from angularFire', inject(function (syncData, Firebase) {
       var path = 'path';
       var limit = 123;
 
-      customSpy(firebaseRef.fns, 'limit', function () {
+      Firebase.fns.limit = jasmine.createSpy().and.callFake(function() {
         return this;
       });
 
       var sd = syncData(path, limit);
-      expect(firebaseRef.fns.limit).toHaveBeenCalledWith(123);
+      expect(Firebase.fns.limit).toHaveBeenCalledWith(123);
 
     }));
   });

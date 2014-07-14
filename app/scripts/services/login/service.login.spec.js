@@ -3,28 +3,28 @@
 /* service.login specs */
 
 describe('service.login', function () {
-  var flush, resolve, reject, customSpy, ErrorWithCode;
+  var flush, resolve, reject, ErrorWithCode;
 
   beforeEach(function () {
     module('Tectonic.service.login');
-    module('firebase.stubs');
+    module('Tectonic.mocks');
   });
 
-  beforeEach(module(function ($provide, stubsProvider) {
+  beforeEach(module(function ($provide, firebaseStubProvider, authProvider) {
     // mock dependencies used by our services to isolate testings
 
-    var stubs = stubsProvider.$get();
+    $provide.value('Firebase', firebaseStubProvider.$get());
+    $provide.value('$firebaseSimpleLogin', authProvider.$get());
+    $provide.value('firebaseRef', firebaseStubProvider.$get());
+  }));
 
-    $provide.value('Firebase', stubs.firebaseStub());
-    $provide.value('$location', stubs.stub('path'));
-    $provide.value('$firebaseSimpleLogin', stubs.angularAuthStub());
-    $provide.value('firebaseRef', stubs.firebaseStub());
+  beforeEach(inject(function (async, _ErrorWithCode_) {
 
-    flush = stubs.flush;
-    resolve = stubs.resolve;
-    reject = stubs.reject;
-    customSpy = stubs.customSpy;
-    ErrorWithCode = stubs.ErrorWithCode;
+    flush = async.flush;
+    resolve = async.resolve;
+    reject = async.reject;
+
+    ErrorWithCode = _ErrorWithCode_;
   }));
 
   describe('loginService', function () {
@@ -105,7 +105,8 @@ describe('service.login', function () {
 
       beforeEach(
         inject(function ($timeout, $firebaseSimpleLogin, $q) {
-          customSpy($firebaseSimpleLogin.fns, '$changePassword',
+
+          $firebaseSimpleLogin.fns.$changePassword.and.callFake(
             function (eml, op, np) {
               var def = $q.defer();
               $timeout(function () {
@@ -217,7 +218,7 @@ describe('service.login', function () {
 
           var cb = jasmine.createSpy();
 
-          customSpy($firebaseSimpleLogin.fns, '$changePassword',
+          $firebaseSimpleLogin.fns.$changePassword.and.callFake(
             function (email, op, np) {
               var def = $q.defer();
               $timeout(function () {
@@ -247,13 +248,14 @@ describe('service.login', function () {
     describe('#createAccount', function () {
 
       beforeEach(inject(function ($timeout, $firebaseSimpleLogin, $q) {
-        customSpy($firebaseSimpleLogin.fns, '$createUser', function (eml, pass) {
-          var def = $q.defer();
-          $timeout(function () {
-            def.resolve({name: 'kato'});
+        $firebaseSimpleLogin.fns.$createUser.and.callFake(
+          function (eml, pass) {
+            var def = $q.defer();
+            $timeout(function () {
+              def.resolve({name: 'kato'});
+            });
+            return def.promise;
           });
-          return def.promise;
-        });
       }));
 
       it('should fail with Error if init() is not called first', inject(function ($timeout, loginService) {
@@ -284,11 +286,13 @@ describe('service.login', function () {
       it('should invoke callback if $firebaseSimpleLogin throws an error',
         inject(function (loginService, $timeout, $firebaseSimpleLogin, $q) {
           var cb = jasmine.createSpy();
-          customSpy($firebaseSimpleLogin.fns, '$createUser', function (email, pass) {
-            var def = $q.defer();
-            def.reject('joy!');
-            return def.promise;
-          });
+
+          $firebaseSimpleLogin.fns.$createUser.and.callFake(
+            function (email, pass) {
+              var def = $q.defer();
+              def.reject('joy!');
+              return def.promise;
+            });
           loginService.init();
           loginService.createAccount('test@test.com', 123, cb);
           flush($timeout);
@@ -318,19 +322,6 @@ describe('service.login', function () {
   });
 
   describe('profileCreator', function () {
-
-    var flush;
-
-    beforeEach(module(function ($provide, stubsProvider) {
-      // mock dependencies used by our services to isolate testing
-
-      var stubs = stubsProvider.$get();
-
-      flush = stubs.flush;
-
-      $provide.value('firebaseRef', stubs.firebaseStub());
-
-    }));
 
     it('should invoke set on Firebase',
       inject(function (profileCreator, firebaseRef, $timeout) {

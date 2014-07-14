@@ -56,6 +56,11 @@ module.exports = function (grunt) {
           '<%= yeoman.app %>/**/*.html',
           '.tmp/<%= yeoman.styles %>/**/*.css',
           '<%= yeoman.app %>/<%= yeoman.images %>/**/*.{png,jpg,jpeg,gif,webp,svg}'
+        ],
+        tasks: [
+          'copy:all',
+          'includeSource',
+          'bower-install',
         ]
       }
     },
@@ -249,7 +254,7 @@ module.exports = function (grunt) {
             dest  : 'www',
             src   : [
               'images/**/*.{png,jpg,jpeg,gif,webp,svg}',
-              '*.html',
+              'scripts/**/*.html',
               'templates/**/*.html',
               'fonts/*',
               'res/**'
@@ -499,6 +504,22 @@ module.exports = function (grunt) {
   });
 
   grunt.registerTask('serve', function (target) {
+
+//    grunt.config.set('watch', {
+//      all: {
+//        options: {
+//          livereload: true
+//        },
+//        files: _.flatten(_.pluck(grunt.config.get('watch'), 'files')),
+//        tasks: [
+//          'copy:all',
+//          'includeSource',
+//          'bower-install',
+//          'watch'
+//        ]
+//      }
+//    });
+
     if (target === 'dist') {
       return grunt.task.run(['build', 'connect:dist:keepalive']);
     }
