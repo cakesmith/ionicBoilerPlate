@@ -4,21 +4,20 @@
 
   app.config(['$stateProvider', function ($stateProvider) {
 
-    $stateProvider.state('scan', {
-      url        : '/scan',
-      controller : 'ScanCtrl',
-      templateUrl: '/scripts/views/scan/scan.tpl.html'
+    $stateProvider.state('login', {
+      url        : '/login',
+      controller : 'LoginCtrl',
+      templateUrl: '/scripts/views/login/view.login.tpl.html'
     });
 
   }]);
 
-  app.controller('ScanCtrl', ['$scope', function ($scope) {
+  app.controller('LoginCtrl', ['$scope', function ($scope) {
 
     var init = function () {
 
       // A definitive place to put everything that needs to run when the controller starts.
       // Avoid writing any code outside of this function that executes immediately.
-
 
 
     };
@@ -27,7 +26,7 @@
 
   }]);
 
-}(angular.module('Tectonic.view.scan', [
+}(angular.module('Tectonic.view.login', [
 
 // List Dependencies to inject here
 

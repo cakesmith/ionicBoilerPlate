@@ -1,38 +1,33 @@
 'use strict';
+/* jshint ignore:start */
 
 describe('service.changeEmail', function () {
 
+  var ErrorWithCode, flush, reject, resolve, cb, opts;
+
   beforeEach(function () {
     module('Tectonic.service.changeEmail');
-    module('firebase.stubs');
+    module('Tectonic.mocks');
   });
 
-  var customSpy, ErrorWithCode, flush;
+  beforeEach(module(function ($provide, firebaseStubProvider, loginServiceStubProvider) {
 
-  beforeEach(module(function ($provide, stubsProvider) {
+    var FBURL = "http://mock.firebaseio.com";
 
-    var stubs = stubsProvider.$get();
-
-
-    customSpy = stubs.customSpy;
-    ErrorWithCode = stubs.ErrorWithCode;
-    flush = stubs.flush;
-
-    var loginService = jasmine.createSpyObj('loginService', ['login', 'logout', 'changePassword', 'createAccount', 'createProfile']);
-
-
-//    var $rootScope = jasmine.createSpy();
-
-    $provide.value('firebaseRef', stubs.firebaseStub());
-    $provide.value('loginService', loginService);
-//    $provide.value('$rootScope', $rootScope);
-
+    $provide.value('FBURL', FBURL);
+    $provide.value('Firebase', firebaseStubProvider.$get());
+    $provide.value('loginService', loginServiceStubProvider.$get());
 
   }));
 
-  var cb, opts;
+  beforeEach(inject(function (_ErrorWithCode_, async, $rootScope) {
 
-  beforeEach(inject(function ($rootScope, loginService) {
+    ErrorWithCode = _ErrorWithCode_;
+
+    flush = async.flush;
+    reject = async.reject;
+    resolve = async.resolve;
+
     $rootScope.auth = {
       user: {
         uid  : 54321,
@@ -48,37 +43,22 @@ describe('service.changeEmail', function () {
       pass    : 'password'
     };
 
-    loginService.login = function (email, pass, callback) {
-      callback(null, 'user');
-    };
+  }));
+
+  beforeEach(inject(function (loginService) {
+
+    // resolve login service by default
+
+    loginService.login.and.callFake(function (email, pass, cb) {
+      cb(null, 'user');
+    });
 
 
   }));
 
-
   describe('#authenticate', function () {
 
-    it('should reject promise on loginService error', inject(function ($timeout, changeEmailService, loginService) {
-
-      var err = new ErrorWithCode(123, 'fail');
-
-      loginService.login = function (email, pass, callback) {
-        callback(err);
-      };
-
-      spyOn(loginService, 'login').and.callThrough();
-
-      changeEmailService(opts);
-      flush($timeout);
-
-      expect(loginService.login).toHaveBeenCalled();
-      expect(cb).toHaveBeenCalledWith(err);
-
-    }));
-
-    it('should resolve', inject(function ($timeout, changeEmailService, loginService) {
-
-      spyOn(loginService, 'login').and.callThrough();
+    it('should resolve promise by default', inject(function ($timeout, changeEmailService, loginService) {
 
       changeEmailService(opts);
       flush($timeout);
@@ -88,57 +68,94 @@ describe('service.changeEmail', function () {
 
     }));
 
+    it('should reject promise on loginService error', inject(function ($timeout, changeEmailService, loginService) {
 
-  });
+      var err = new ErrorWithCode(123, 'fail');
 
-  describe('#loadOldProfile', function () {
-
-    it('should reject promise on firebaseRef error', inject(function ($timeout, changeEmailService, firebaseRef) {
-
-      var error = new ErrorWithCode(543, 'zort');
-
-      firebaseRef.fns.once = function (value, snapFn, err) {
-
-        err(error);
-
-      };
+      loginService.login.and.callFake(function (email, pass, callback) {
+        callback(err);
+      });
 
       changeEmailService(opts);
       flush($timeout);
 
-      expect(cb).toHaveBeenCalledWith(error);
+      expect(loginService.login).toHaveBeenCalled();
+      expect(cb).toHaveBeenCalledWith(err);
 
     }));
 
 
-    it('should update user profile to have new email', inject(function (firebaseRef, changeEmailService, $timeout) {
+  });
 
-      var newEmail = {};
+  var newEmail = {};
 
-      firebaseRef.fns.once = function (value, snapFn, err) {
+  beforeEach(inject(function (Firebase) {
 
-        var snap = {
-          val: function () {
-            return newEmail;
-          }
-        };
-        snapFn(snap);
+    // resolve Firebase.once promise by default
+
+    Firebase.fns.once.and.callFake(function (value, snapFn) {
+
+      var snap = {
+        val: function () {
+          return newEmail;
+        }
       };
+      snapFn(snap);
+    });
 
-      spyOn(firebaseRef.fns, 'once').and.callThrough();
+  }));
+
+  describe('#loadOldProfile', function () {
+
+    it('should update user profile to have new email', inject(function (Firebase, changeEmailService, $timeout) {
 
       changeEmailService(opts);
       flush($timeout);
 
-
-      expect(firebaseRef.fns.once).toHaveBeenCalled();
+      expect(Firebase.fns.once).toHaveBeenCalled();
       expect(newEmail.email).toEqual('my@newEmail.com');
 
 
     }));
+
+    it('should reject promise on Firebase error', inject(function ($timeout, changeEmailService, Firebase) {
+
+      var error = new ErrorWithCode(543, 'zort');
+
+      Firebase.fns.once.and.callFake(function (value, snapFn, err) {
+        err(error);
+      });
+
+      changeEmailService(opts);
+      flush($timeout);
+
+      expect(Firebase.fns.once).toHaveBeenCalled();
+      expect(cb).toHaveBeenCalledWith(error);
+
+    }));
+
   });
 
   describe('#createNewAccount', function () {
+
+    it('should reject promise on loginService error', inject(function (loginService, changeEmailService, $timeout) {
+
+      var error = new ErrorWithCode(789, 'fjord');
+
+      loginService.createAccount.and.callFake(function (email, pass, err) {
+        err(error);
+      });
+
+      changeEmailService(opts);
+      flush($timeout);
+
+      expect(loginService.login).toHaveBeenCalled();
+
+      expect(loginService.createAccount).toHaveBeenCalled();
+
+      expect(cb).toHaveBeenCalledWith(error);
+
+    }));
 
 
   });
@@ -160,3 +177,4 @@ describe('service.changeEmail', function () {
 
 
 });
+/* jshint ignore:end */
