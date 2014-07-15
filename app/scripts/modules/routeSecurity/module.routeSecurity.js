@@ -65,7 +65,7 @@
       this._checkCurrent();
     },
 
-    _redirect            : function (path) {
+    _redirect: function (path) {
       this._location.replace();
       this._location.path(path);
     },
