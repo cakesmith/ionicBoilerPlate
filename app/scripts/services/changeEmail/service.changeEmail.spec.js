@@ -2,7 +2,7 @@
 
 describe('service.changeEmail', function () {
 
-  var ErrorWithCode, flush, reject, resolve, cb, opts;
+  var ErrorWithCode, flush, resolve, reject, cb, opts;
 
   var newEmail;
 
@@ -48,21 +48,30 @@ describe('service.changeEmail', function () {
 
   }));
 
-  beforeEach(inject(function (loginService, Firebase) {
+  // Resolve loginService promises
 
-    // resolve loginService.login promise by default
+  beforeEach(inject(function (loginService) {
+
+    // .login
 
     loginService.login.and.callFake(function (email, pass, cb) {
       cb(null, 'user');
     });
 
-    // resolve loginService.createAccount by default
+    // .createAccount
 
     loginService.createAccount.and.callFake(function (email, pass, cb) {
       cb(null, 'user');
     });
 
-    // resolve Firebase.once promise by default
+
+  }));
+
+  // Resolve Firebase promises
+
+  beforeEach(inject(function (Firebase) {
+
+    // .once
 
     Firebase.fns.once.and.callFake(function (value, snapFn) {
 
@@ -73,6 +82,23 @@ describe('service.changeEmail', function () {
       };
       snapFn(snap);
     });
+
+    // .remove
+
+    Firebase.fns.remove.and.callFake(function (cb) {
+      cb(null);
+    });
+
+
+  }));
+
+  // Resolve $rootScope promises
+
+  beforeEach(inject(function ($q, $timeout, $rootScope) {
+
+    // .auth.$removeUser
+
+    $rootScope.auth.$removeUser = jasmine.createSpy().and.returnValue(resolve($q, {im: 'batman'}));
 
 
   }));
@@ -90,7 +116,7 @@ describe('service.changeEmail', function () {
         jasmine.any(Function)
       );
 
-      expect(cb).not.toHaveBeenCalled();
+      expect(cb).toHaveBeenCalledWith(null);
 
     }));
 
@@ -124,7 +150,6 @@ describe('service.changeEmail', function () {
       );
 
 
-
     }));
 
   });
@@ -136,30 +161,44 @@ describe('service.changeEmail', function () {
 
       changeEmailService(opts);
 
-      expect(loginService.createAccount).not.toHaveBeenCalled();
-
       flush($timeout);
 
-      expect(loginService.createAccount).toHaveBeenCalled();
+      expect(Firebase.fns.set).toHaveBeenCalledWith({
+          email: 'my@newEmail.com'
+        },
+        jasmine.any(Function)
+      );
 
-      expect(cb).not.toHaveBeenCalled();
 
-      expect(Firebase.fns.set).toHaveBeenCalled();
+    }));
 
+  });
+
+  describe('#removeOldProfile', function () {
+
+    it('should remove the old profile', inject(function (Firebase, changeEmailService, $timeout) {
+
+      changeEmailService(opts);
+      flush($timeout);
+
+      expect(Firebase.fns.remove).toHaveBeenCalledWith(jasmine.any(Function));
 
     }));
 
 
   });
 
-
-
-  describe('#removeOldProfile', function () {
-
-
-  });
-
   describe('#removeOldLogin', function () {
+
+    it('should remove old login', inject(function (changeEmailService, $timeout, $rootScope) {
+
+      changeEmailService(opts);
+      flush($timeout);
+
+      expect($rootScope.auth.$removeUser).toHaveBeenCalled();
+
+
+    }));
 
 
   });
@@ -168,7 +207,7 @@ describe('service.changeEmail', function () {
 
     describe('Firebase errors', function () {
 
-      it('should reject promise on Firebase.once error', inject(function ($timeout, changeEmailService, Firebase) {
+      it('.once', inject(function ($timeout, changeEmailService, Firebase) {
 
         var error = new ErrorWithCode(543, 'zort');
 
@@ -184,13 +223,42 @@ describe('service.changeEmail', function () {
 
       }));
 
-    });
+      it('.remove', inject(function (Firebase, changeEmailService, $timeout) {
 
+        var error = new ErrorWithCode(789, 'pirate');
+
+        Firebase.fns.remove.and.callFake(function (err) {
+          err(error);
+        });
+
+        changeEmailService(opts);
+        flush($timeout);
+
+        expect(cb).toHaveBeenCalledWith(error);
+
+      }));
+
+      it('.set', inject(function (Firebase, changeEmailService, $timeout) {
+
+        var error = new ErrorWithCode(938, 'batman');
+
+        Firebase.fns.set.and.callFake(function (profile, err) {
+          err(error);
+        });
+
+        changeEmailService(opts);
+        flush($timeout);
+
+        expect(cb).toHaveBeenCalledWith(error);
+
+      }));
+
+    });
 
     describe('loginService errors', function () {
 
 
-      it('loginService.login error', inject(function ($timeout, changeEmailService, loginService) {
+      it('.login', inject(function ($timeout, changeEmailService, loginService) {
 
         var err = new ErrorWithCode(123, 'fail');
 
@@ -206,7 +274,7 @@ describe('service.changeEmail', function () {
 
       }));
 
-      it('loginService.createAccount error', inject(function (loginService, changeEmailService, $timeout) {
+      it('.createAccount', inject(function (loginService, changeEmailService, $timeout) {
 
         var error = new ErrorWithCode(789, 'fjord');
 
@@ -224,6 +292,64 @@ describe('service.changeEmail', function () {
       }));
 
     });
+
+    describe('$rootScope errors', function () {
+
+      it('.auth.$removeUser', inject(function ($q, $timeout, $rootScope, changeEmailService) {
+
+        $rootScope.auth.$removeUser = jasmine.createSpy().and.returnValue(reject($q, 'womp womp'));
+
+        changeEmailService(opts);
+        flush($timeout);
+
+        expect(cb).toHaveBeenCalledWith('womp womp');
+
+
+      }));
+
+
+    });
+  });
+
+  describe('null callback', function() {
+
+    it('should provide a null callback', inject(function(changeEmailService, $timeout) {
+
+      // this can only really be verified on a code coverage report
+
+      opts = {
+        email: 'bob@bobert.com',
+        password: 'wordpass'
+      };
+
+      changeEmailService(opts);
+      flush($timeout);
+
+    }));
+
+
+  });
+
+  describe('.catch', function() {
+
+    it('should call errorFn', inject(function(changeEmailService, $timeout, $rootScope, $q) {
+
+      // again, this can only really be confirmed with a
+      // coverage report.
+
+      opts = {
+        email: 'nick@larosa.com',
+        password: 'spaceballs',
+        callback: 'this is where we die silently'
+      };
+
+      $rootScope.auth.$removeUser = jasmine.createSpy().and.returnValue(reject($q, 'womp womp'));
+
+
+      changeEmailService(opts);
+      flush($timeout);
+
+    }));
 
 
   });

@@ -17,7 +17,8 @@
         FirebaseStub.fns = jasmine.createSpyObj('Firebase.fns', [
           'set',
           'child',
-          'once'
+          'once',
+          'remove'
         ]);
 
         FirebaseStub.fns.callbackVal = null;

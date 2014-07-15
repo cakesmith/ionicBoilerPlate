@@ -368,7 +368,7 @@ module.exports = function (grunt) {
         singleRun       : false,
         preprocessors   : {
           // Update this if you change the yeoman config path
-          'app/scripts/**/!(*spec).js': ['coverage']
+          'app/scripts/**/!(*spec|*mock).js': ['coverage']
         },
         coverageReporter: {
           reporters: [
@@ -562,7 +562,10 @@ module.exports = function (grunt) {
 
   grunt.registerTask('cordova', ['copy:all', 'cordova:build']);
 
-  grunt.registerTask('coverage', ['karma:continuous', 'connect:coverage:keepalive']);
+  grunt.registerTask('coverage', [
+    'karma:continuous',
+    'connect:coverage:keepalive'
+  ]);
 
   grunt.registerTask('default', [
     'newer:jshint',
