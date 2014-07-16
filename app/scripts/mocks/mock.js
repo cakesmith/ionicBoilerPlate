@@ -21,7 +21,4 @@
   'Tectonic.mock.async',
   'Tectonic.mock.auth',
   'Tectonic.mock.firebase',
-  'Tectonic.mock.services',
-  'Tectonic.mock.modules',
-  'Tectonic.mock.views'
   ])));

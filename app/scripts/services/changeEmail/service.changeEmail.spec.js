@@ -11,13 +11,18 @@ describe('service.changeEmail', function () {
     module('Tectonic.mocks');
   });
 
-  beforeEach(module(function ($provide, firebaseStubProvider, loginServiceStubProvider) {
+  beforeEach(module(function ($provide, firebaseStubProvider) {
+
+    var loginService = jasmine.createSpyObj('loginService', [
+      'login',
+      'createAccount'
+    ]);
 
     var FBURL = 'http://mock.firebaseio.com';
 
     $provide.value('FBURL', FBURL);
     $provide.value('Firebase', firebaseStubProvider.$get());
-    $provide.value('loginService', loginServiceStubProvider.$get());
+    $provide.value('loginService', loginService);
 
   }));
 

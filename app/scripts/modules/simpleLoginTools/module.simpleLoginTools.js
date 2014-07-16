@@ -87,7 +87,7 @@
    *    <div ng-show-auth="logout,error">This appears for logout or for error condition!</div>
    * </code>
    */
-  simpleLoginTools.directive('ngShowAuth', ['$rootScope', function ($rootScope) {
+  simpleLoginTools.directive('ngShowAuth', ['$rootScope', '$timeout', function ($rootScope, $timeout) {
     var loginState = 'logout';
     $rootScope.$on('$firebaseSimpleLogin:login', function () {
       loginState = 'login';
@@ -100,7 +100,12 @@
     });
 
     function getExpectedState(scope, attr) {
-      var expState = scope.$eval(attr);
+      var expState;
+      try {
+        expState = scope.$eval(attr);
+      } catch (e) {
+
+      }
       if (typeof(expState) !== 'string' && !angular.isArray(expState)) {
         expState = attr;
       }
@@ -127,6 +132,7 @@
         throw new Error('ng-show-auth directive must be login, logout, or error (you may use a comma-separated list)');
       }
       angular.forEach(states, function (s) {
+
         if (!inList(s, ['login', 'logout', 'error'])) {
           throw new Error('Invalid state "' + s + '" for ng-show-auth directive, must be one of login, logout, or error');
         }
@@ -136,16 +142,18 @@
 
     return {
       restrict: 'A',
-      link    : function (scope, el, attr) {
+
+      link: function (scope, el, attr) {
+
         var expState = getExpectedState(scope, attr.ngShowAuth);
         assertValidStates(expState);
         function fn() {
           var show = inList(loginState, expState);
           // sometimes if ngCloak exists on same element, they argue, so make sure that
           // this one always runs last for reliability
-          setTimeout(function () {
+          $timeout(function () {
             el.toggleClass('ng-cloak', !show);
-          }, 0);
+          });
         }
 
         fn();
@@ -153,6 +161,7 @@
         $rootScope.$on('$firebaseSimpleLogin:logout', fn);
         $rootScope.$on('$firebaseSimpleLogin:error', fn);
       }
+
     };
   }]);
 

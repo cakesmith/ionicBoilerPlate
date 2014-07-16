@@ -36,6 +36,7 @@
     "jasmine": false,
     "runs": false,
     "waitsFor": false,
-    "spyOn": false
+    "spyOn": false,
+    "done": false
   }
 }
