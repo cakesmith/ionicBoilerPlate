@@ -173,170 +173,208 @@ describe('module.routeSecurity', function () {
         });
 
       });
+    });
 
-      describe('messages', function () {
+    describe('messages', function () {
 
-        describe('when auth is required', function () {
+      describe('when auth is required', function () {
 
-          beforeEach(module(function ($provide) {
+        beforeEach(module(function ($provide) {
 
-            $route = {};
+          $route = {};
+          $route.current = {
+            authRequired: true
+          };
+          $provide.value('$route', $route);
 
-            $route.current = {
-              authRequired: true
+        }));
+
+        describe('and is authenticated', function () {
+
+          beforeEach(module(function () {
+
+            authObj = {
+              user: 'nicholas'
             };
-
-            $provide.value('$route', $route);
 
           }));
 
-          describe('and is authenticated', function () {
+          describe('#_login', function () {
+
+            describe('if this.redirectTo is defined', function () {
+
+              beforeEach(module(function () {
+                $location.path.and.returnValue('/batman');
+                authObj = {};
+              }));
+
+              describe('it should hook into login message', function () {
+
+                it('and redirect to redirectTo', inject(function ($rootScope) {
+
+                  $rootScope.$broadcast('$firebaseSimpleLogin:login');
+
+                  expect($location.replace).toHaveBeenCalled();
+                  expect($location.path.calls.mostRecent().args).toEqual(['/batman']);
+                }));
+
+
+              });
+            });
+
+            describe('if this.redirectTo is undefined', function () {
+
+              describe('if $location.path()', function () {
+
+                describe(' === loginRedirectPath', function () {
+
+                  beforeEach(inject(function () {
+                    $location.path.and.returnValue(loginRedirectPath);
+                  }));
+
+                  it('should set location to /', inject(function ($rootScope) {
+                    $rootScope.$broadcast('$firebaseSimpleLogin:login');
+                    expect($location.replace).toHaveBeenCalled();
+                    expect($location.path).toHaveBeenCalledWith('/');
+                  }));
+
+                });
+
+                describe(' !== loginRedirectPath', function () {
+
+                  beforeEach(inject(function () {
+                    $location.path.and.returnValue('zort');
+                  }));
+
+                  it('should not redirect', inject(function ($rootScope) {
+                    $rootScope.$broadcast('$firebaseSimpleLogin:login');
+                    expect($location.replace).not.toHaveBeenCalled();
+                    expect($location.path.calls.mostRecent().args).not.toEqual('/');
+                  }));
+                });
+              });
+            });
+
+
+          });
+
+          describe('#_logout', function () {
 
             beforeEach(module(function () {
+              $route.current.pathTo = loginRedirectPath;
+            }));
 
-              authObj = {
-                user: 'nicholas'
-              };
+            it('should redirect to loginRedirectPath', inject(function ($rootScope) {
+
+              expect($location.path.calls.mostRecent().args).toEqual([]);
+
+              $rootScope.$broadcast('$firebaseSimpleLogin:logout');
+
+              expect($location.path.calls.mostRecent().args).toEqual([loginRedirectPath]);
 
             }));
 
-            describe('#_login', function () {
-
-              describe('if this.redirectTo is defined', function () {
-
-                beforeEach(module(function () {
-                  $location.path.and.returnValue('/batman');
-                  authObj = {};
-                }));
-
-                describe('it should hook into login message', function () {
-
-                  it('and redirect to redirectTo', inject(function ($rootScope) {
-
-                    $rootScope.$broadcast('$firebaseSimpleLogin:login');
-
-                    expect($location.replace).toHaveBeenCalled();
-                    expect($location.path.calls.mostRecent().args).toEqual(['/batman']);
-                  }));
-
-
-                });
-              });
-
-              describe('if this.redirectTo is undefined', function () {
-
-                describe('if $location.path()', function () {
-
-                  describe(' === loginRedirectPath', function () {
-
-                    beforeEach(inject(function () {
-                      $location.path.and.returnValue(loginRedirectPath);
-                    }));
-
-                    it('should set location to /', inject(function ($rootScope) {
-                      $rootScope.$broadcast('$firebaseSimpleLogin:login');
-                      expect($location.replace).toHaveBeenCalled();
-                      expect($location.path).toHaveBeenCalledWith('/');
-                    }));
-
-                  });
-
-                  describe(' !== loginRedirectPath', function () {
-
-                    beforeEach(inject(function () {
-                      $location.path.and.returnValue('zort');
-                    }));
-
-                    it('should not redirect', inject(function ($rootScope) {
-                      $rootScope.$broadcast('$firebaseSimpleLogin:login');
-                      expect($location.replace).not.toHaveBeenCalled();
-                      expect($location.path.calls.mostRecent().args).not.toEqual('/');
-                    }));
-                  });
-                });
-              });
-
-
-            });
-
-            describe('#_logout', function () {
-
-              beforeEach(module(function () {
-
-
-                $route.current.pathTo = loginRedirectPath;
-
-
-              }));
-
-              it('should hook into $firebaseSimpleLogin:logout message', inject(function ($rootScope) {
-
-                expect($location.path.calls.mostRecent().args).toEqual([]);
-
-                $rootScope.$broadcast('$firebaseSimpleLogin:logout');
-
-                expect($location.path.calls.mostRecent().args).toEqual([loginRedirectPath]);
-
-              }));
-
-
-            });
-
-            describe('#_error', function () {
-
-              describe('if authenticated', function () {
-
-                it('should not redirect', inject(function ($rootScope) {
-
-                  $rootScope.$broadcast('$firebaseSimpleLogin:error');
-
-                  expect($location.replace).not.toHaveBeenCalled();
-                  expect($location.path).toHaveBeenCalledWith();
-
-                }));
-              });
-
-              describe('if not authenticated', function () {
-
-                beforeEach(module(function () {
-
-                  authObj = {};
-
-                }));
-
-                it('should redirect', inject(function ($rootScope) {
-
-                  $rootScope.$broadcast('$firebaseSimpleLogin:error');
-
-                  expect($location.replace).toHaveBeenCalled();
-                  expect($location.path).toHaveBeenCalledWith(loginRedirectPath);
-
-
-                }));
-
-
-              });
-
-            });
 
           });
+
+          describe('#_error', function () {
+
+            it('should not redirect', inject(function ($rootScope) {
+
+              $rootScope.$broadcast('$firebaseSimpleLogin:error');
+
+              expect($location.replace).not.toHaveBeenCalled();
+              expect($location.path).toHaveBeenCalledWith();
+
+            }));
+          });
+
+          describe('$routeChangeStart', function () {
+
+            it('should pass through', inject(function ($rootScope) {
+
+              $rootScope.$broadcast('$routeChangeStart', [null, 'some/path']);
+
+              expect($location.replace).not.toHaveBeenCalled();
+              expect($location.path).toHaveBeenCalledWith();
+
+            }));
+
+          });
+
         });
 
-        describe('when auth is not required', function () {
+        describe('and is not authenticated', function () {
 
           beforeEach(module(function ($provide) {
 
-            $route = {};
-
-            $route.current = {
-              authRequired: false
-            };
-
-            $provide.value('$route', $route);
+            authObj = {};
 
           }));
 
-          iit('#_login should not redirect', inject(function ($rootScope) {
+          it('#_login should route to loginRedirectPath', inject(function ($rootScope) {
+
+            $rootScope.$broadcast('$firebaseSimpleLogin:login');
+
+            expect($location.replace).toHaveBeenCalled();
+            expect($location.path).toHaveBeenCalledWith(loginRedirectPath);
+
+          }));
+
+          it('#_logout should route to loginRedirectPath', inject(function ($rootScope) {
+
+            $rootScope.$broadcast('$firebaseSimpleLogin:logout');
+
+            expect($location.replace).toHaveBeenCalled();
+            expect($location.path).toHaveBeenCalledWith(loginRedirectPath);
+
+          }));
+
+          it('#_error should route to loginRedirectPath', inject(function ($rootScope) {
+
+            $rootScope.$broadcast('$firebaseSimpleLogin:error');
+
+            expect($location.replace).toHaveBeenCalled();
+            expect($location.path).toHaveBeenCalledWith(loginRedirectPath);
+
+          }));
+
+          it('$routeChangeSuccess should hook into route changes', inject(function ($rootScope) {
+
+            $rootScope.$broadcast('$routeChangeStart', [null, 'some/path']);
+
+            expect($location.replace).toHaveBeenCalled();
+            expect($location.path).toHaveBeenCalledWith(loginRedirectPath);
+
+          }));
+
+        });
+
+      });
+
+      describe('when auth is not required', function () {
+
+        beforeEach(module(function ($provide) {
+
+          $route = {};
+
+          $route.current = {
+            authRequired: false
+          };
+
+          $provide.value('$route', $route);
+
+        }));
+
+        describe('and not authenticated', function () {
+
+          beforeEach(module(function () {
+
+            authObj = {};
+
+          }));
+
+          it('#_login should not redirect', inject(function ($rootScope) {
 
 //            expect($location.path.calls.count()).toEqual(1);
             $rootScope.$broadcast('$firebaseSimpleLogin:login');
@@ -364,36 +402,52 @@ describe('module.routeSecurity', function () {
 
         });
 
-        describe('or not authenticated', function () {
+        describe('and is authenticated', function () {
 
-          beforeEach(module(function ($provide) {
+          beforeEach(module(function () {
 
-            $route = {};
-
-            $route.current = {
-              authRequired: false
+            authObj = {
+              user: 'nicholas'
             };
 
-            $provide.value('$route', $route);
+          }));
+
+          it('#_login should not redirect', inject(function ($rootScope) {
+
+            expect($location.path.calls.count()).toEqual(1);
+            $rootScope.$broadcast('$firebaseSimpleLogin:login');
+            expect($location.replace).not.toHaveBeenCalled();
+            expect($location.path.calls.count()).toEqual(2);
+            expect($location.path.calls.mostRecent().args).toEqual([]);
 
           }));
 
-          it('#_login should not route', inject(function ($rootScope) {
+          it('#_logout should not redirect', inject(function ($rootScope) {
 
-            $rootScope.$broadcast('$firebaseSimpleLogin:login');
-
+            expect($location.path.calls.count()).toEqual(1);
+            $rootScope.$broadcast('$firebaseSimpleLogin:logout');
             expect($location.replace).not.toHaveBeenCalled();
             expect($location.path.calls.count()).toEqual(1);
+            expect($location.path.calls.mostRecent().args).toEqual([]);
 
 
           }));
 
+          it('#_error should not redirect', inject(function ($rootScope) {
+
+            expect($location.path.calls.count()).toEqual(1);
+            $rootScope.$broadcast('$firebaseSimpleLogin:error');
+            expect($location.replace).not.toHaveBeenCalled();
+            expect($location.path.calls.mostRecent().args).toEqual([]);
+
+          }));
 
         });
-
       });
-    });
-  });
 
+
+    });
+
+  });
 
 });
